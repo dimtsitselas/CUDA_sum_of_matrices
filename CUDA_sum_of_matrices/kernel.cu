@@ -9,13 +9,17 @@
 
 __global__ void addMatricesCuda(int* a, int* b, int* c, int nRows, int nCols)
 {
-    int baseI = (blockDim.x * blockIdx.x + threadIdx.x) * nCols;
+    int i = blockDim.x * blockIdx.x + threadIdx.x;
+
+    if (i < nRows * nCols)
+        c[i] = a[i] + b[i];
+    /*int baseI = (blockDim.x * blockIdx.x + threadIdx.x) * nCols;
 
     for (int i = baseI; i < baseI + nCols; i++)
     {
         if (i < nRows * nCols)
             c[i] = a[i] + b[i];
-    }
+    }*/
 }
 
 void addMatrices(int* a, int* b, int* c, int nRows, int nCols)
@@ -32,7 +36,8 @@ void addMatrices(int* a, int* b, int* c, int nRows, int nCols)
     cudaMemcpy(d_a, a, nBytes, cudaMemcpyHostToDevice);
     cudaMemcpy(d_b, b, nBytes, cudaMemcpyHostToDevice);
 
-    addMatricesCuda <<<ceil(nRows / 256.0), 256.0 >>> (d_a, d_b, d_c, nRows, nCols);
+    //addMatricesCuda <<<ceil(nRows / 256.0), 256.0 >>> (d_a, d_b, d_c, nRows, nCols);
+    addMatricesCuda <<<ceil(nRows * nCols / 256.0), 256.0 >> > (d_a, d_b, d_c, nRows, nCols);
 
     cudaMemcpy(c, d_c, nBytes, cudaMemcpyDeviceToHost);
 
